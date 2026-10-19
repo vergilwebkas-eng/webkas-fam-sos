@@ -19,7 +19,8 @@ Deno.serve(async (req:Request) => {
  if(existing?.length) return respond({error:"Nama IC tersebut sudah digunakan atau masih menunggu persetujuan."},409);
  const {data,error}=await adminClient.auth.admin.createUser({email:loginEmailForIC(ic_name),password,email_confirm:true,user_metadata:{ic_name,display_name:display_name||ic_name}});
  if(error) return respond({error:error.message},400);
- const {error:profileError}=await adminClient.from("member_profiles").insert({user_id:data.user.id,ic_name,display_name:display_name||ic_name,member_status:"pending",created_by:null});
+ // An auth.users trigger may create member_profiles automatically; upsert avoids duplicate primary-key failures.
+ const {error:profileError}=await adminClient.from("member_profiles").upsert({user_id:data.user.id,ic_name,display_name:display_name||ic_name,member_status:"pending",created_by:null},{onConflict:"user_id"});
  if(profileError){await adminClient.auth.admin.deleteUser(data.user.id);return respond({error:"Pendaftaran gagal disimpan: "+profileError.message},500)}
  return respond({message:"Pendaftaran berhasil dikirim. Tunggu persetujuan admin utama.",ic_name},201);
 });
