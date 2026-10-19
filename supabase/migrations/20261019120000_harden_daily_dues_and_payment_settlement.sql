@@ -80,11 +80,11 @@ begin
     returning balance, arrears into v_balance, v_arrears;
 
     insert into public.cash_ledger
-      (payment_id, member_id, entry_type, amount, description, created_by)
+      (payment_id, member_id, entry_type, amount, description, created_by, created_at)
     values
       (new.id, new.member_id, 'dues_payment', new.amount,
        'Pembayaran kas disetujui; pelunasan tunggakan: ' || v_paid_to_arrears::text,
-       new.reviewed_by)
+       new.reviewed_by, new.created_at)
     on conflict (payment_id) do nothing;
 
     insert into public.wallet_transactions
@@ -117,8 +117,9 @@ declare
   v_arrears integer;
   v_after integer;
   v_added integer;
-  v_count integer := 0;
+  v_members_count integer := 0;
   v_days_count integer := 0;
+  v_member_days integer := 0;
 begin
   if p_due_date is null then
     p_due_date := (now() at time zone 'Asia/Jakarta')::date;
@@ -149,7 +150,8 @@ begin
     for update;
 
     -- Replay every missing calendar day since the member became active.
-    -- The unique (member_id, due_date) key and wallet lock prevent duplicate charges.
+    -- Existing records are skipped; the wallet lock serializes concurrent retries.
+    v_member_days := 0;
     for v_due_date in
       select gs::date
       from generate_series(m.dues_start_date::timestamp,
@@ -196,15 +198,18 @@ begin
          end);
 
       v_balance := v_after;
-      v_count := v_count + 1;
+      v_member_days := v_member_days + 1;
       v_days_count := v_days_count + 1;
     end loop;
+    if v_member_days > 0 then
+      v_members_count := v_members_count + 1;
+    end if;
   end loop;
 
   return jsonb_build_object(
     'through_date', p_due_date,
     'daily_rate', v_rate,
-    'members_with_charges', v_count,
+    'members_with_charges', v_members_count,
     'daily_entries_created', v_days_count
   );
 end;
