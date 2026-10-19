@@ -125,6 +125,32 @@ begin
     p_due_date := (now() at time zone 'Asia/Jakarta')::date;
   end if;
 
+  -- Never silently apply an old missing date after later dues have already
+  -- changed the wallet. That case needs an explicit ledger reconciliation.
+  if exists (
+    select 1
+    from public.member_profiles p
+    join lateral (
+      select max(l.due_date) as last_due_date
+      from public.daily_dues_log l
+      where l.member_id = p.user_id
+    ) last_log on last_log.last_due_date is not null
+    cross join lateral generate_series(
+      p.dues_start_date::timestamp,
+      last_log.last_due_date::timestamp,
+      interval '1 day'
+    ) missing_day
+    where p.member_status = 'active'
+      and p.dues_start_date is not null
+      and missing_day::date <= last_log.last_due_date
+      and not exists (
+        select 1 from public.daily_dues_log l
+        where l.member_id = p.user_id and l.due_date = missing_day::date
+      )
+  ) then
+    raise exception 'Historical daily dues gap detected; reconcile the member ledger before running catch-up.';
+  end if;
+
   select daily_amount into v_rate
   from public.dues_settings
   where id = 1;
