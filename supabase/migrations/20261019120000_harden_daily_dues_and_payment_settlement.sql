@@ -80,11 +80,11 @@ begin
     returning balance, arrears into v_balance, v_arrears;
 
     insert into public.cash_ledger
-      (payment_id, member_id, entry_type, amount, description, created_by, created_at)
+      (payment_id, member_id, entry_type, amount, description, created_by)
     values
       (new.id, new.member_id, 'dues_payment', new.amount,
        'Pembayaran kas disetujui; pelunasan tunggakan: ' || v_paid_to_arrears::text,
-       new.reviewed_by, new.created_at)
+       new.reviewed_by)
     on conflict (payment_id) do nothing;
 
     insert into public.wallet_transactions
