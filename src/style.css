@@ -6,3 +6,26 @@
 .topbar .topbar-logout{position:static;inset:auto;margin:0;border:1px solid #3b292b;border-radius:9px;padding:11px 14px;color:#ff9b9e;font-size:.78rem;white-space:nowrap;display:flex;align-items:center;gap:8px;background:#211214}
 .topbar .topbar-logout:hover{background:#35191b}
 @media(max-width:720px){.topbar-actions{gap:6px}.topbar .topbar-logout{position:static;inset:auto;font-size:.75rem;padding:10px 11px;border:1px solid #3b292b}}
+
+/* Drawer navigation and account profile */
+.app-shell{min-height:100vh}
+.sidebar.drawer{position:fixed;inset:0 auto 0 0;width:min(310px,86vw);height:100dvh;overflow-y:auto;transform:translateX(-110%);transition:transform .24s ease;z-index:30;display:flex;flex-direction:column;box-shadow:18px 0 55px #0008}
+.sidebar.drawer.drawer-open{transform:translateX(0)}
+.drawer-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.drawer-close{background:#17221a;border:1px solid var(--line);border-radius:8px;color:#f3f6f3;font-size:1.4rem;width:38px;height:38px}
+.drawer-overlay{position:fixed;inset:0;background:#0009;border:0;border-radius:0;z-index:29;backdrop-filter:blur(2px)}
+.main{margin-left:0!important;padding:28px clamp(14px,4vw,55px) 24px!important;max-width:none}
+.topbar-heading{display:flex;align-items:center;gap:13px;min-width:0}
+.menu-trigger{flex:0 0 auto;background:#142219;border:1px solid #2b382e;border-radius:10px;color:var(--green);font-size:1.25rem;width:44px;height:44px}
+.topbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-shrink:0}
+.topbar .topbar-logout{position:static;inset:auto;margin:0;border:1px solid #3b292b;border-radius:9px;padding:11px 14px;color:#ff9b9e;font-size:.78rem;white-space:nowrap;display:flex;align-items:center;gap:8px;background:#211214}
+.topbar .topbar-logout:hover{background:#35191b}
+.identity .avatar{overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.profile-photo-row{display:flex;align-items:center;gap:18px;margin:22px 0 28px;padding:18px;background:#0a0f0b;border:1px solid var(--line);border-radius:14px}
+.profile-photo{width:96px;height:96px;flex:0 0 96px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#142219;border:2px solid #285435;color:var(--green);font-size:2rem;font-weight:800}
+.profile-photo img{width:100%;height:100%;object-fit:cover}
+.profile-photo-actions{display:flex;align-items:flex-start;gap:9px;flex-direction:column;min-width:0}
+.file-button{position:relative;display:inline-flex;align-items:center;justify-content:center;background:#17221a;color:var(--green);border:1px solid #2b382e;border-radius:9px;padding:10px 14px;font-weight:800;font-size:.78rem;cursor:pointer}
+.file-button input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+@media(max-width:720px){.sidebar.drawer{position:fixed;inset:0 auto 0 0;width:min(310px,86vw);padding:20px 16px;display:flex;border-right:1px solid var(--line);border-bottom:0}.sidebar.drawer .logout{position:static;inset:auto;margin-top:auto;border-top:1px solid var(--line);padding:22px 12px 10px;font-size:.84rem}.sidebar.drawer .logout:first-letter{font-size:inherit}.main{padding:18px 13px!important}.topbar{align-items:flex-start;gap:8px}.topbar-heading{gap:9px}.topbar .topbar-logout{position:static;inset:auto;font-size:.72rem;padding:10px 9px}.topbar-actions{gap:5px}.topbar h1{font-size:1.15rem}.profile-photo-row{align-items:flex-start;padding:13px;gap:12px}.profile-photo{width:76px;height:76px;flex-basis:76px}}
