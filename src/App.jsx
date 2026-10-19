@@ -101,6 +101,9 @@ export default function App() {
     let loginEmail = icLoginEmail(icLogin);
     if (!String(icLogin).includes('@')) {
       const { data: resolved } = await supabase.functions.invoke('account-profile', { body: { action: 'resolve-login', username: String(icLogin).trim().toLowerCase() } });
+      if (resolved?.error === 'Akun admin harus masuk menggunakan email terdaftar.') {
+        setError(resolved.error); setBusy(false); return;
+      }
       if (resolved?.email) loginEmail = resolved.email;
     }
     const { error: e1 } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
