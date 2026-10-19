@@ -3,7 +3,7 @@ import { supabase, supabaseConfigured } from './lib/supabase.js';
 
 const money = (value, currency = 'IDR') => new Intl.NumberFormat('id-ID', { style: 'currency', currency, maximumFractionDigits: 0 }).format(Number(value || 0));
 const date = (value) => value ? new Date(value).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => { const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date()); const values = Object.fromEntries(parts.map(({ type, value }) => [type, value])); return `${values.year}-${values.month}-${values.day}`; };
 const icLoginEmail = (value) => { const identifier = String(value || '').trim().toLowerCase(); return identifier.includes('@') ? identifier : `${identifier.replace(/[^a-z0-9._-]/g, '-') || 'member'}@login.webkas-fam-sos.invalid`; };
 
 export default function App() {
@@ -177,7 +177,7 @@ export default function App() {
       const n = Number(days); const amt = Number(amount);
       if (!Number.isInteger(n) || n < 1 || n > 365) throw new Error('Jumlah hari harus 1 sampai 365.');
       if (!Number.isFinite(amt) || amt <= 0) throw new Error('Nominal pembayaran harus lebih dari nol.');
-      const start = today(); const endD = new Date(start + 'T12:00:00'); endD.setDate(endD.getDate() + n - 1);
+      const start = today(); const endD = new Date(start + 'T00:00:00Z'); endD.setUTCDate(endD.getUTCDate() + n - 1);
       const path = session.user.id + '/' + crypto.randomUUID() + '-' + proof.name.replace(/[^a-zA-Z0-9._-]/g, '_');
       const upload = await supabase.storage.from('payment-proofs').upload(path, proof, { contentType: proof.type, upsert: false });
       if (upload.error) throw upload.error;
