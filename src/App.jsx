@@ -66,7 +66,7 @@ export default function App() {
     });
     const { data: listener } = supabase.auth.onAuthStateChange((_event, next) => {
       setSession(next);
-      if (!next) { setProfile(null); setPayments([]); setMembers([]); setLedger([]); setLoading(false); }
+      if (!next) { setProfile(null); setPayments([]); setMembers([]); setLedger([]); setWallets([]); setLoading(false); }
     });
     return () => listener.subscription.unsubscribe();
   }, []);
@@ -83,6 +83,8 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'payment_submissions' }, () => loadData(session.user))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'member_profiles' }, () => loadData(session.user))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'dues_settings' }, () => loadData(session.user))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'member_wallets' }, () => loadData(session.user))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wallet_transactions' }, () => loadData(session.user))
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [session?.user?.id, loadData]);
