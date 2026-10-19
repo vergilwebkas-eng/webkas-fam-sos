@@ -102,7 +102,7 @@ $function$;
 revoke all on function public.on_payment_approved_add_ledger() from public, anon, authenticated;
 
 create or replace function public.process_daily_dues(
-  p_due_date date default ((now() at time zone 'Asia/Jakarta')::date)
+  p_due_date date default (((now() at time zone 'Asia/Jakarta')::date) - 1)
 )
 returns jsonb
 language plpgsql
@@ -122,7 +122,7 @@ declare
   v_member_days integer := 0;
 begin
   if p_due_date is null then
-    p_due_date := (now() at time zone 'Asia/Jakarta')::date;
+    p_due_date := ((now() at time zone 'Asia/Jakarta')::date) - 1;
   end if;
 
   -- Never silently apply an old missing date after later dues have already
@@ -244,7 +244,7 @@ $function$;
 revoke all on function public.process_daily_dues(date) from public, anon, authenticated;
 grant execute on function public.process_daily_dues(date) to service_role;
 
--- pg_cron uses UTC. 17:01 UTC is 00:01 Asia/Jakarta on the next calendar day.
+-- pg_cron uses UTC. At 00:01 WIB, bill the previous completed calendar day so a member joining today is not charged twice immediately.
 select cron.unschedule(jobid)
 from cron.job
 where jobname = 'webkas-daily-dues-wib';
@@ -252,5 +252,5 @@ where jobname = 'webkas-daily-dues-wib';
 select cron.schedule(
   'webkas-daily-dues-wib',
   '1 17 * * *',
-  $cron$select public.process_daily_dues((now() at time zone 'Asia/Jakarta')::date);$cron$
+  $cron$select public.process_daily_dues(((now() at time zone 'Asia/Jakarta')::date) - 1);$cron$
 );
