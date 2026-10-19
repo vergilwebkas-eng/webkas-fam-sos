@@ -1,12 +1,12 @@
 -- Make daily dues and approved payment settlement deterministic in Asia/Jakarta.
--- Existing active members begin accruing from their existing local join date.
--- Pending members start accruing on the local date they are activated.
+-- Existing active members begin accruing on rollout date because historical activation is not reliably recorded.
+-- Pending members start accruing on the local date they are activated. Avoid fabricated retroactive debt.
 
 alter table public.member_profiles
   add column if not exists dues_start_date date;
 
 update public.member_profiles
-set dues_start_date = (created_at at time zone 'Asia/Jakarta')::date
+set dues_start_date = (now() at time zone 'Asia/Jakarta')::date
 where member_status = 'active' and dues_start_date is null;
 
 create or replace function public.set_member_dues_start_date()
