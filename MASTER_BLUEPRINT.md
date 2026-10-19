@@ -291,3 +291,15 @@ Gunakan akun admin dan member yang berbeda serta nominal dummy.
 
 ---
 Dokumen ini adalah master spesifikasi teknis yang bisa dipakai ulang. Untuk salinan yang benar-benar identik, source code, semua migration, Edge Functions, Storage policies, RLS policies, cron jobs, environment setup, dan pengaturan deployment juga harus ikut direplikasi dan diverifikasi.
+
+
+## 15. Audit lanjutan dan perbaikan produksi — 19 Oktober 2026
+
+- Storage policy `proofs_read_owner_or_admin` kini mengizinkan pemilik bukti serta role `admin` dan `admin_utama`. Bucket `payment-proofs` tetap privat; batas file 5 MB dan MIME type gambar dibatasi di bucket.
+- Review pembayaran di frontend memeriksa apakah baris pending benar-benar berhasil diubah. Jika admin lain lebih dulu memprosesnya, UI tidak lagi mengumumkan keputusan sukses palsu.
+- Tampilan nominal mengikuti `dues_settings.currency`. Konfigurasi produksi saat audit memakai `UIC`, sehingga label tidak lagi salah menyebut Rupiah.
+- Vercel production build pada commit aplikasi terbaru berstatus READY dan log build menunjukkan Vite berhasil membuat bundle.
+- Cron cleanup bukti berjalan setiap 5 menit. Pemeriksaan `net._http_response` menunjukkan respons HTTP 200 dan `success: true` pada eksekusi yang diperiksa.
+- Jadwal iuran `webkas-daily-dues-wib` aktif pada `1 17 * * *` UTC, yaitu 00:01 WIB. Eksekusi pertama setelah perubahan belum bisa dianggap teruji sampai job benar-benar berjalan dan hasilnya diperiksa.
+- Supabase Security Advisor masih memberi peringatan bahwa perlindungan kata sandi yang bocor belum diaktifkan. Aktifkan fitur ini di pengaturan Auth proyek sebelum menganggap konfigurasi keamanan selesai.
+- Belum dilakukan uji end-to-end memakai transaksi dummy approved dan dua akun berbeda. Jangan membuat transaksi uji di database produksi yang tercatat sebagai transaksi nyata; lakukan uji terkontrol sebelum penggunaan kas sungguhan.
