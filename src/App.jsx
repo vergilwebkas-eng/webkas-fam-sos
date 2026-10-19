@@ -312,7 +312,7 @@ export default function App() {
     ...indebtedMembers.map((member, index) => (index + 1) + '. ' + member.ic_name + ': tunggakan ' + money(member.wallet.arrears, settings?.currency || 'UIC')),
     '',
     'Catatan: saldo dan tunggakan ditampilkan terpisah sesuai catatan kas.'
-  ].join('\\n');
+  ].join('\n');
   async function copyBalanceRecap() {
     try {
       await navigator.clipboard.writeText(recapText);
