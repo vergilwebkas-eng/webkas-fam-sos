@@ -7,7 +7,8 @@ Webkas kas keluarga berbasis React + Vite dan Supabase. Tema: dark mode, neon gr
 - Dashboard member menampilkan saldo, tunggakan, tarif kas, dan pengajuan terbaru.
 - Pengajuan pembayaran dengan bukti gambar JPG/PNG/WEBP maksimal 5 MB.
 - Penyimpanan bukti di bucket privat `payment-proofs`; bukti hanya dibuka lewat signed URL berumur 60 detik.
-- Panel admin untuk membuat akun member, melihat saldo/tunggakan, mengaktifkan/nonaktifkan member, mengubah tarif, dan menyetujui/menolak pengajuan.
+- Pendaftaran member mandiri; akun berstatus menunggu sampai disetujui admin dari daftar member.
+- Panel admin untuk menyetujui/menolak pendaftaran, melihat saldo/tunggakan, mengaktifkan/nonaktifkan member, mengubah tarif, dan menyetujui/menolak pengajuan pembayaran.
 - Saldo bertambah saat pembayaran disetujui admin.
 - Pemotongan kas harian otomatis pukul 00.00 WIB melalui pg_cron. Saldo yang tidak cukup dihabiskan dan kekurangannya masuk tunggakan.
 - Catatan harian menyimpan tarif saat pemotongan sehingga perubahan tarif tidak mengubah riwayat lama.
@@ -26,10 +27,10 @@ Environment Vercel yang dibutuhkan:
 
 Jangan pernah menaruh `service_role` atau secret key di frontend, GitHub, maupun environment variable berawalan `VITE_`.
 
-## Pembuatan akun pertama dan admin
-Database saat ini belum memiliki akun Auth. Sebelum login dapat digunakan, buat akun admin pertama melalui Supabase Dashboard > Authentication > Users. Untuk login berbasis IC, alamat internal sintetis admin harus mengikuti pola `adm_sos@login.webkas-fam-sos.invalid` (nama IC `ADM_SOS` dinormalisasi menjadi `adm_sos`). Tetapkan `app_metadata.role = "admin"` lewat proses server tepercaya / panel admin Supabase. Di halaman website, admin tetap masuk memakai nama IC `ADM_SOS` dan password yang diset saat pembuatan akun. Jangan menaruh role admin di `user_metadata` yang dapat diubah pengguna.
+## Pembuatan akun pertama dan pendaftaran member
+Database perlu memiliki satu akun admin pertama sebelum pendaftaran dapat disetujui. Buat akun tersebut melalui Supabase Dashboard > Authentication > Users dengan alamat internal sintetis `adm_sos@login.webkas-fam-sos.invalid`, lalu tetapkan `app_metadata.role = "admin"` melalui proses server tepercaya. Login di website tetap memakai nama IC `ADM_SOS`. Jangan menaruh role admin di `user_metadata` yang dapat diubah pengguna.
 
-Admin membuat akun member melalui Edge Function `create-member`, yang memeriksa role dari `app_metadata` di server. Admin mengisi nama IC dan password awal berupa nomor HP; member login dengan dua nilai itu. Source terbaru fungsi ini ada di `supabase/functions/create-member/index.ts`. Setelah source diperbarui, fungsi tersebut harus di-deploy ke Supabase sebelum form pembuatan member berbasis IC berfungsi. Password/nomor HP hanya dipakai sebagai kredensial Auth dan tidak disalin ke profil publik.
+Member mendaftar sendiri dari tombol **Daftar sebagai member**. Edge Function `register-member` membuat akun Auth dan profil berstatus `pending`; akses aplikasi baru tersedia setelah admin menyetujui pendaftaran di daftar member. Source: `supabase/functions/register-member/index.ts`. Nama IC yang sudah terdaftar atau masih menunggu tidak dapat didaftarkan ulang. Password digunakan untuk Supabase Auth dan tidak disimpan di tabel profil publik.
 
 ## Struktur database
 - `member_profiles`: nama IC, nama tampilan, status akun.
