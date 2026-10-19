@@ -199,13 +199,23 @@ export default function App() {
   }
   async function reviewPayment(payment, status) {
     setBusy(true); setError(''); setMessage('');
-    const { error: e1 } = await supabase.from('payment_submissions').update({
-      status, reviewed_by: session.user.id, reviewed_at: new Date().toISOString(),
-      review_note: reviewNotes[payment.id]?.trim() || null
-    }).eq('id', payment.id).eq('status', 'pending');
-    if (e1) setError(e1.message);
-    else setMessage(status === 'approved' ? 'Pembayaran disetujui.' : 'Pembayaran ditolak.');
-    await loadData(session.user); setBusy(false);
+    try {
+      const { data: updated, error: updateError } = await supabase.from('payment_submissions').update({
+        status, reviewed_by: session.user.id, reviewed_at: new Date().toISOString(),
+        review_note: reviewNotes[payment.id]?.trim() || null
+      }).eq('id', payment.id).eq('status', 'pending').select('id').maybeSingle();
+      if (updateError) throw updateError;
+      if (!updated) {
+        setError('Pengajuan ini sudah diproses atau tidak lagi tersedia. Status terbaru sedang dimuat.');
+      } else {
+        setMessage(status === 'approved' ? 'Pembayaran disetujui.' : 'Pembayaran ditolak.');
+      }
+      await loadData(session.user);
+    } catch (err) {
+      setError(err.message || 'Keputusan pembayaran gagal disimpan.');
+    } finally {
+      setBusy(false);
+    }
   }
   async function registerMember(e) {
     e.preventDefault(); setBusy(true); setError(''); setMessage('');
