@@ -75,7 +75,12 @@ export default function App() {
     if (data) { setBranding(data); setBrandingForm(data); }
   }, []);
 
-  useEffect(() => { loadBranding(); }, [loadBranding]);
+  useEffect(() => {
+    loadBranding();
+    if (!supabase) return;
+    const channel = supabase.channel('site-branding-live').on('postgres_changes', { event: '*', schema: 'public', table: 'site_branding' }, () => loadBranding()).subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [loadBranding]);
 
   useEffect(() => {
     if (!supabase) { setLoading(false); return; }
